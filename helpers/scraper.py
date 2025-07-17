@@ -49,7 +49,6 @@ def scrape_with_selenium(url):
     options.add_argument("--headless")
     options.add_argument(f"--user-agent={random.choice(USER_AGENTS)}")
     options.add_argument('--disable-gpu')
-    # Point to system Chrome binary
     options.binary_location = '/usr/bin/chromium'
 
     service = Service(ChromeDriverManager().install())
