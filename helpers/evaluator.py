@@ -13,3 +13,4 @@ def evaluate_listing(listing):
     Based on current market trends, is this watch undervalued? Answer with 'Undervalued' or 'Fairly Priced' and brief reasoning."""
     response = llm(prompt)
     return response.strip()
+
