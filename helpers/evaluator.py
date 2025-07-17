@@ -29,4 +29,3 @@ def evaluate_listing(listing):
     except Exception as eval_err:
         logger.error(f"LLM evaluation failed: {eval_err}")
         return "Evaluation Error"
-
