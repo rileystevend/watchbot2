@@ -3,7 +3,7 @@ from helpers.evaluator import evaluate_listing
 from helpers.notifier import send_notification
 
 def main():
-    url = "https://www.chrono24.com/rolex/daytona--mod71.htm"
+    url = "https://www.chrono24.com/search/index.htm?query=rolex%20daytona"
     listings = scrape_chrono24(url)
     for listing in listings[:5]:
         result = evaluate_listing(listing)
