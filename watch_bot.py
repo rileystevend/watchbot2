@@ -1,3 +1,4 @@
+```python
 from helpers.scraper import scrape_chrono24
 from helpers.evaluator import evaluate_listing
 from helpers.notifier import send_notification
@@ -5,7 +6,8 @@ from helpers.notifier import send_notification
 def main():
     url = "https://www.chrono24.com/rolex/daytona--mod71.htm"
     listings = scrape_chrono24(url)
-    for listing in listings[:5]:
+    print(f"[bot] Retrieved {len(listings)} listings")
+    for listing in listings:
         result = evaluate_listing(listing)
         if "undervalued" in result.lower():
             message = (
@@ -18,3 +20,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+```
