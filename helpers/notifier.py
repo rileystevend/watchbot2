@@ -1,4 +1,3 @@
-```python
 import os
 import smtplib
 from email.message import EmailMessage
@@ -20,4 +19,3 @@ def send_notification(message):
         server.starttls()
         server.login(EMAIL_USER, EMAIL_PASSWORD)
         server.send_message(msg)
-```
