@@ -9,3 +9,4 @@ def evaluate_listing(listing):
     prompt = f"""Analyze this luxury watch listing:\nTitle: {listing['title']}\nPrice: {listing['price']}\n\nBased on current market trends, is this watch undervalued? Answer with 'Undervalued' or 'Fairly Priced' and brief reasoning."""
     response = llm(prompt)
     return response.strip()
+
