@@ -6,14 +6,17 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from webdriver_manager.chrome import ChromeDriverManager
 
 logger = logging.getLogger('scraper')
 
+# Rotate user agents to mimic real browsers
+data
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15",
 ]
+# Cookie to bypass banner
+data
 COOKIES = {"cookieconsent_status": "dismiss"}
 
 
@@ -30,11 +33,10 @@ def scrape_chrono24(url):
         resp.raise_for_status()
         html = resp.text
         logger.info(f"HTTP fetch succeeded: status={resp.status_code}, length={len(html)}")
+        return _parse_listings(html)
     except Exception as http_err:
-        logger.warning(f"HTTP fetch failed ({http_err}), using Selenium fallback")
+        logger.warning(f"HTTP fetch failed ({http_err}), falling back to Selenium")
         return _scrape_with_selenium(url)
-
-    return _parse_listings(html)
 
 
 def _scrape_with_selenium(url):
@@ -44,12 +46,12 @@ def _scrape_with_selenium(url):
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument(f"--user-agent={random.choice(USER_AGENTS)}")
     options.binary_location = '/usr/bin/chromium'
-
     try:
-        service = Service(ChromeDriverManager().install())
+        # Use system-installed chromedriver for version match
+        service = Service('/usr/bin/chromedriver')
         driver = webdriver.Chrome(service=service, options=options)
         driver.get(url)
-        # dismiss cookie banner if present
+        # Dismiss cookie banner
         try:
             btn = driver.find_element(By.ID, "onetrust-accept-btn-handler")
             btn.click()
@@ -58,11 +60,10 @@ def _scrape_with_selenium(url):
         html = driver.page_source
         driver.quit()
         logger.info("Selenium fetch succeeded")
+        return _parse_listings(html)
     except Exception as sel_err:
         logger.error(f"Selenium fetch failed: {sel_err}")
         return []
-
-    return _parse_listings(html)
 
 
 def _parse_listings(html):
