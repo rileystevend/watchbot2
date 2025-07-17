@@ -10,13 +10,12 @@ from selenium.webdriver.common.by import By
 logger = logging.getLogger('scraper')
 
 # Rotate user agents to mimic real browsers
-data
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15",
 ]
-# Cookie to bypass banner
-data
+
+# Cookie to bypass cookie-consent banner
 COOKIES = {"cookieconsent_status": "dismiss"}
 
 
@@ -47,7 +46,6 @@ def _scrape_with_selenium(url):
     options.add_argument(f"--user-agent={random.choice(USER_AGENTS)}")
     options.binary_location = '/usr/bin/chromium'
     try:
-        # Use system-installed chromedriver for version match
         service = Service('/usr/bin/chromedriver')
         driver = webdriver.Chrome(service=service, options=options)
         driver.get(url)
