@@ -15,7 +15,11 @@ def send_notification(message):
     msg["To"] = RECIPIENT_EMAIL
     msg.set_content(message)
 
-    with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT) as server:
-        server.starttls()
-        server.login(EMAIL_USER, EMAIL_PASSWORD)
-        server.send_message(msg)
+    try:
+        with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT) as server:
+            server.starttls()
+            server.login(EMAIL_USER, EMAIL_PASSWORD)
+            server.send_message(msg)
+        print("[notifier] Email sent successfully")
+    except Exception as e:
+        print(f"[notifier] Failed to send email: {e}")
