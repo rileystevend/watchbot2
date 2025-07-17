@@ -8,7 +8,7 @@ logger = logging.getLogger('watch-bot')
 
 def main():
     try:
-        url = "https://www.chrono24.com/rolex/daytona--mod71.htm"
+        url = "https://www.chrono24.com/rolex/daytona--mod2.htm"
         logger.info(f"Starting scrape for {url}")
         listings = scrape_chrono24(url)
         logger.info(f"Retrieved {len(listings)} listings")
