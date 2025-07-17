@@ -1,4 +1,5 @@
 openai
 langchain
-selenium
+langchain-community
 beautifulsoup4
+requests
