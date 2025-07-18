@@ -46,7 +46,6 @@ def _scrape_with_selenium(url):
     options.add_argument(f"--user-agent={random.choice(USER_AGENTS)}")
     options.binary_location = '/usr/bin/chromium'
     try:
-      def _scrape_with_selenium(url):
      options = Options()
      service = Service('/usr/bin/chromedriver')
      driver = webdriver.Chrome(service=service, options=options)
