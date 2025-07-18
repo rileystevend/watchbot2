@@ -72,7 +72,7 @@ def _scrape_with_selenium(url):
      html = driver.page_source
      driver.quit()
      logger.info("Selenium fetch succeeded with injected cookie")
-     return _parse_listings(html)
+        return _parse_listings(html)
        # service = Service('/usr/bin/chromedriver')
        # driver = webdriver.Chrome(service=service, options=options)
        # driver.get(url)
