@@ -88,7 +88,7 @@ def _scrape_with_selenium(url):
             EC.element_to_be_clickable((By.CSS_SELECTOR, "button.js-cookie-accept-all"))
         )
         btn.click()
-    except Exception:
+    except TimeoutException:
         pass
     # give the page a second to reflow
     time.sleep(1)
