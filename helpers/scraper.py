@@ -85,6 +85,15 @@ def _scrape_with_selenium(url):
     driver = webdriver.Chrome(service=service, options=options)
     # inject consent on the *www* domain so mobile inherits it
     driver.get(url)
+    try:
+        btn = WebDriverWait(driver, 5).until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, "button.js-cookie-accept-all"))
+        )
+        btn.click()
+    except TimeoutException:
+        pass
+    # give the page a second to reflow
+    time.sleep(1)
     driver.add_cookie({
         "name":   "cookieconsent_status",
         "value":  "dismiss",
@@ -94,6 +103,15 @@ def _scrape_with_selenium(url):
 
     # now hit the mobile+search URL
     driver.get(url)
+    try:
+        btn = WebDriverWait(driver, 5).until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, "button.js-cookie-accept-all"))
+        )
+        btn.click()
+    except TimeoutException:
+        pass
+    # give the page a second to reflow
+    time.sleep(1)
     # 2) WAIT for the mobile tiles
     WebDriverWait(driver, 20).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, ".article-item-container"))
