@@ -78,7 +78,7 @@ def _scrape_with_selenium(url):
 
         html = driver.page_source
         driver.quit()
-        logger.info("Selenium fetch succeeded with dynamic wait")
+        logger.info("Selenium fetch succeeded with dynamic wait and injected cookie")
         return _parse_listings(html)
     except Exception as sel_err:
         logger.error(f"Selenium fetch failed: {sel_err}")
