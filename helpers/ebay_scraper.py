@@ -67,4 +67,4 @@ def scrape_ebay_certified_rolex():
 
 if __name__ == "__main__":
     for watch in scrape_ebay_certified_rolex():
-        print(f"{watch['title']} — {watch['price']}\n  {watch['link']}\n)
+        print(f"{watch['title']} — {watch['price']}\n  {watch['link']}\n")
