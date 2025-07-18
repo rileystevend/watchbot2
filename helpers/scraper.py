@@ -46,9 +46,37 @@ def _scrape_with_selenium(url):
     options.add_argument(f"--user-agent={random.choice(USER_AGENTS)}")
     options.binary_location = '/usr/bin/chromium'
     try:
-        service = Service('/usr/bin/chromedriver')
-        driver = webdriver.Chrome(service=service, options=options)
-        driver.get(url)
+      def _scrape_with_selenium(url):
+     options = Options()
+     service = Service('/usr/bin/chromedriver')
+     driver = webdriver.Chrome(service=service, options=options)
+     
+ 
+     # 1) Kick off on the base domain so we can set the consent cookie
+     driver.get("https://www.chrono24.com/")
+     driver.add_cookie({
+         "name":  "cookieconsent_status",
+         "value": "dismiss",
+         "domain": "www.chrono24.com",
+         "path":   "/"
+     })
+ 
+     # 2) Now navigate to the real page—the banner will already be ‘accepted’
+     driver.get(url)
+
+     # wait for your listing containers…
+     WebDriverWait(driver, 20).until(
+         EC.presence_of_element_located((By.CSS_SELECTOR, '.article-item-container'))
+     )
+     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+     time.sleep(2)
+     html = driver.page_source
+     driver.quit()
+     logger.info("Selenium fetch succeeded with injected cookie")
+     return _parse_listings(html)
+       # service = Service('/usr/bin/chromedriver')
+       # driver = webdriver.Chrome(service=service, options=options)
+       # driver.get(url)
         # Dismiss cookie banner
         try:
             btn = driver.find_element(By.ID, "onetrust-accept-btn-handler")
