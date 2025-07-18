@@ -1,23 +1,27 @@
 import logging
 import random
+import time
 import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 logger = logging.getLogger('scraper')
 
 # Rotate user agents to mimic real browsers
 USER_AGENTS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 "
+    "(KHTML, like Gecko) Version/15.1 Safari/605.1.15",
 ]
 
 # Cookie to bypass cookie-consent banner
 COOKIES = {"cookieconsent_status": "dismiss"}
-
 
 def scrape_chrono24(url):
     headers = {
@@ -37,7 +41,6 @@ def scrape_chrono24(url):
         logger.warning(f"HTTP fetch failed ({http_err}), falling back to Selenium")
         return _scrape_with_selenium(url)
 
-
 def _scrape_with_selenium(url):
     options = Options()
     options.add_argument("--headless")
@@ -45,53 +48,40 @@ def _scrape_with_selenium(url):
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument(f"--user-agent={random.choice(USER_AGENTS)}")
     options.binary_location = '/usr/bin/chromium'
-    try:
-     options = Options()
-     service = Service('/usr/bin/chromedriver')
-     driver = webdriver.Chrome(service=service, options=options)
-     
- 
-     # 1) Kick off on the base domain so we can set the consent cookie
-     driver.get("https://www.chrono24.com/")
-     driver.add_cookie({
-         "name":  "cookieconsent_status",
-         "value": "dismiss",
-         "domain": "www.chrono24.com",
-         "path":   "/"
+    driver.get("https://www.chrono24.com/")
+    driver.add_cookie({
+        "name":  "cookieconsent_status",
+        "value": "dismiss",
+        "domain": "www.chrono24.com",
+        "path":   "/"
      })
- 
-     # 2) Now navigate to the real page—the banner will already be ‘accepted’
-     driver.get(url)
+    try:
+        service = Service('/usr/bin/chromedriver')
+        driver = webdriver.Chrome(service=service, options=options)
+        driver.get(url)
 
-     # wait for your listing containers…
-     WebDriverWait(driver, 20).until(
-         EC.presence_of_element_located((By.CSS_SELECTOR, '.article-item-container'))
-     )
-     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-     time.sleep(2)
-     html = driver.page_source
-     driver.quit()
-     logger.info("Selenium fetch succeeded with injected cookie")
-        return _parse_listings(html)
-       # service = Service('/usr/bin/chromedriver')
-       # driver = webdriver.Chrome(service=service, options=options)
-       # driver.get(url)
-        # Dismiss cookie banner
+        # Wait for the JS-rendered listings to appear
+        WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, '.article-item-container'))
+        )
+        # Scroll to bottom to load any lazy content
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(2)
+
+        # Dismiss the cookie banner if it's still present
         try:
             btn = driver.find_element(By.ID, "onetrust-accept-btn-handler")
             btn.click()
         except Exception:
             pass
+
         html = driver.page_source
-        # after html = resp.text  or html = driver.page_source
-        logger.info(f"[scraper] HTML snippet (body):\n{html[1000:15000]}")
         driver.quit()
-        logger.info("Selenium fetch succeeded")
+        logger.info("Selenium fetch succeeded with dynamic wait")
         return _parse_listings(html)
     except Exception as sel_err:
         logger.error(f"Selenium fetch failed: {sel_err}")
         return []
-
 
 def _parse_listings(html):
     soup = BeautifulSoup(html, 'html.parser')
