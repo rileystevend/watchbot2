@@ -56,6 +56,8 @@ def _scrape_with_selenium(url):
         except Exception:
             pass
         html = driver.page_source
+        # after html = resp.text (or html = driver.page_source)
+        logger.debug(f"[scraper] HTML snippet:\n{html[:2000]}")  # log the first 2000 characters
         driver.quit()
         logger.info("Selenium fetch succeeded")
         return _parse_listings(html)
