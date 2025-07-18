@@ -120,7 +120,7 @@ def _parse_listings(html):
 #            title = item.select_one('.article-title').text.strip()
 #            link = item.select_one('a')['href']
 #            listings.append({'title': title, 'price': price, 'link': link})
-        except Exception as parse_err:
+    except Exception as parse_err:
             logger.debug(f"Failed parsing an item: {parse_err}")
     logger.info(f"Parsed {len(listings)} listings")
     return listings
