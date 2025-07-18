@@ -18,6 +18,10 @@ def main():
             return
 
         for listing in listings:
+            score = evaluate_listing(listing["title"])
+            listing["score"] = score
+            logger.info(f"Score is {score}")
+            time.sleep(0.5)  # throttle so you don’t get more 429s
             try:
                 result = evaluate_listing(listing)
                 logger.info(f"Evaluation for '{listing['title']}': {result}")
