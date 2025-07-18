@@ -2,7 +2,6 @@ import logging
 import os
 import openai
 import time
-from openai.error import RateLimitError, InsufficientQuotaError
 from langchain_community.llms import OpenAI
 
 logger = logging.getLogger('__name__')
@@ -15,17 +14,17 @@ except Exception as init_err:
     llm = None
 
 
-def evaluate_listing(title: str) -> float:
-    prompt = f"Rate how attractive a deal this listing is: {title}"
-    try:
-        # if using ChatCompletion, you'd use openai.ChatCompletion.create(...)
-        response = llm(prompt)
-        # parse out a numeric score...
-        return float(response)  
-    except (RateLimitError, InsufficientQuotaError) as e:
-        logger.warning(f"Quota/rate-limit hit when evaluating '{title}': {e}.  Skipping evaluation.")
-        return 0.0
-    except Exception as e:
-        logger.error(f"Unexpected error during evaluation of '{title}': {e}")
-        return 0.0
+
+ def evaluate_listing(title: str) -> float:
+     prompt = f"Score this listing: {title}"
+     try:
+         response = llm(prompt)
+         return float(response)  # or however you parse it
+     except Exception as e:
+         # detect 429 from the message text if you want:
+         if "429" in str(e):
+             logger.warning(f"Rate-limit hit evaluating '{title}': {e}")
+         else:
+             logger.error(f"Unexpected eval error for '{title}': {e}")
+         return 0.0
 
