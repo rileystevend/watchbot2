@@ -48,6 +48,9 @@ def _scrape_with_selenium(url):
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument(f"--user-agent={random.choice(USER_AGENTS)}")
     options.binary_location = '/usr/bin/chromium'
+    service = Service('/usr/bin/chromedriver')
+    driver = webdriver.Chrome(service=service, options=options)
+
     driver.get("https://www.chrono24.com/")
     driver.add_cookie({
         "name":  "cookieconsent_status",
