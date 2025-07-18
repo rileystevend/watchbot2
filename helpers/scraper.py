@@ -109,12 +109,17 @@ def _scrape_with_selenium(url):
 def _parse_listings(html):
     soup = BeautifulSoup(html, 'html.parser')
     listings = []
-    for item in soup.select('.article-item-container'):
-        try:
-            price = item.select_one('.article-price').text.strip()
-            title = item.select_one('.article-title').text.strip()
-            link = item.select_one('a')['href']
-            listings.append({'title': title, 'price': price, 'link': link})
+    for item in soup.select("div.listing-item--tile"):
+        title = item.select_one(".listing-item--title").text.strip()
+        price = item.select_one(".listing-item--price").text.strip()
+        link  = "https://www.chrono24.com" + item.select_one("a")["href"]
+        listings.append({"title": title, "price": price, "link": link})
+#    for item in soup.select('.article-item-container'):
+#        try:
+#            price = item.select_one('.article-price').text.strip()
+#            title = item.select_one('.article-title').text.strip()
+#            link = item.select_one('a')['href']
+#            listings.append({'title': title, 'price': price, 'link': link})
         except Exception as parse_err:
             logger.debug(f"Failed parsing an item: {parse_err}")
     logger.info(f"Parsed {len(listings)} listings")
