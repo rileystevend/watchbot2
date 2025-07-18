@@ -57,7 +57,7 @@ def _scrape_with_selenium(url):
             pass
         html = driver.page_source
         # after html = resp.text  or html = driver.page_source
-        logger.info(f"[scraper] HTML snippet (body):\n{html[2000:4000]}")
+        logger.info(f"[scraper] HTML snippet (body):\n{html[1000:15000]}")
         driver.quit()
         logger.info("Selenium fetch succeeded")
         return _parse_listings(html)
