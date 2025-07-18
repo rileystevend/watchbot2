@@ -31,10 +31,37 @@ headers = {
         'Connection': 'keep-alive',
 }
 
+from urllib.parse import urlparse, urlunparse
+
+def _normalize_desktop_url(url: str) -> str:
+    """
+    Turn either
+      https://www.chrono24.com/rolex/daytona--mod2.htm
+      https://www.chrono24.com/m-rolex/daytona--mod2.htm
+      https://m.chrono24.com/rolex/daytona--mod2.htm
+    all into
+      https://www.chrono24.com/rolex/daytona--mod2.htm
+    """
+    p = urlparse(url)
+    # 1) Fix the host to www.chrono24.com
+    host = p.netloc
+    if host.startswith("m."):
+        host = host.replace("m.", "www.", 1)
+    # 2) Strip any leading "/m-" from the path
+    path = p.path
+    if path.startswith("/m-"):
+        path = path[len("/m-"):]
+    # 3) Rebuild without any query or fragment
+    return urlunparse((p.scheme, host, path, "", "", ""))
 
 def scrape_chrono24(url):
     # 1) force the search + mobile subdomain
-    fetch_url = "https://m.chrono24.com/rolex/daytona--mod2.htm?dosearch=true"
+    desktop_url = _normalize_desktop_url(url)
+    fetch_url = (desktop_url + "?dosearch=true").replace(
+        "www.chrono24.com", "m.chrono24.com"
+    )
+    logger.info(f"Normalized desktop URL → {desktop_url}")
+    logger.info(f"Fetching mobile URL → {fetch_url}")
     
     try:
         resp = requests.get(fetch_url, headers=headers, cookies=COOKIES, timeout=10)
