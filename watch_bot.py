@@ -2,6 +2,7 @@ import logging
 from helpers.ebay_scraper import scrape_ebay_certified_rolex
 from helpers.evaluator import evaluate_listing
 from helpers.notifier import send_notification
+import time
 
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s:%(name)s:%(message)s')
 logger = logging.getLogger('watch-bot')
