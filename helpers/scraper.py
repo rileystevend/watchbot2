@@ -96,7 +96,7 @@ def _scrape_with_selenium(url):
     driver.get(url)
     # 2) WAIT for the mobile tiles
     WebDriverWait(driver, 20).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, "div.listing-item--tile"))
+        EC.presence_of_element_located((By.CSS_SELECTOR, ".article-item-container"))
     )
     # scroll to ensure any lazy-loading
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -117,16 +117,15 @@ def _scrape_with_selenium(url):
 def _parse_listings(html):
     soup = BeautifulSoup(html, "html.parser")
     listings = []
-    for tile in soup.select("div.listing-item--tile"):
-        try:
-            title = tile.select_one(".listing-item--title").text.strip()
-            price = tile.select_one(".listing-item--price").text.strip()
-            href  = tile.select_one("a")["href"]
-            listings.append({
-                "title": title,
-                "price": price,
-                "link":  "https://www.chrono24.com" + href
-            })
+    for item in soup.select("div.article-item-container"):
+        title = item.select_one(".article-title").text.strip()
+        price = item.select_one(".article-price").text.strip()
+        link  = item.select_one("a")["href"]
+        listings.append({
+            "title": title,
+            "price": price,
+            "link":  "https://www.chrono24.com" + href
+        })
         except Exception as err:
             logger.debug(f"Failed parsing a tile: {err}")
     logger.info(f"Parsed {len(listings)} listings")
