@@ -59,8 +59,6 @@ def _scrape_with_selenium(url):
         "path":   "/"
      })
     try:
-        service = Service('/usr/bin/chromedriver')
-        driver = webdriver.Chrome(service=service, options=options)
         driver.get(url)
 
         # Wait for the JS-rendered listings to appear
