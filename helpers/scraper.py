@@ -134,15 +134,16 @@ def _parse_listings(html):
     soup = BeautifulSoup(html, "html.parser")
     listings = []
     for item in soup.select("div.article-item-container"):
-        title = item.select_one(".article-title").text.strip()
-        price = item.select_one(".article-price").text.strip()
-        link  = item.select_one("a")["href"]
-        listings.append({
-            "title": title,
-            "price": price,
-            "link":  "https://www.chrono24.com" + href
-        })
-    except Exception as err:
+        try:
+            title = item.select_one(".article-title").text.strip()
+            price = item.select_one(".article-price").text.strip()
+            href  = item.select_one("a")["href"]
+            listings.append({
+                "title": title,
+                "price": price,
+                "link":  f"https://www.chrono24.com{href}"
+            })
+        except Exception as err:
             logger.debug(f"Failed parsing a tile: {err}")
     logger.info(f"Parsed {len(listings)} listings")
     return listings
