@@ -34,9 +34,8 @@ headers = {
 
 def scrape_chrono24(url):
     # 1) force the search + mobile subdomain
-    fetch_url = (url + "?dosearch=true").replace(
-        "www.chrono24.com", "m.chrono24.com"
-    )
+    fetch_url = "https://m.chrono24.com/rolex/daytona--mod2.htm?dosearch=true"
+    
     try:
         resp = requests.get(fetch_url, headers=headers, cookies=COOKIES, timeout=10)
         resp.raise_for_status()
