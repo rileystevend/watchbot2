@@ -1,5 +1,5 @@
 import logging
-from helpers.scraper import scrape_chrono24
+from helpers.ebay_scraper import scrape_ebay_certified_rolex
 from helpers.evaluator import evaluate_listing
 from helpers.notifier import send_notification
 
@@ -8,9 +8,9 @@ logger = logging.getLogger('watch-bot')
 
 def main():
     try:
-        url = "https://www.chrono24.com/rolex/daytona-from-2016--imod2831.htm"
+        url = "https://www.ebay.com/sch/i.html?_nkw=certified+rolex+watchh&_sop=10"
         logger.info(f"Starting scrape for {url}")
-        listings = scrape_chrono24(url)
+        listings = scrape_ebay_certified_rolex(url)
         logger.info(f"Retrieved {len(listings)} listings")
 
         if not listings:
