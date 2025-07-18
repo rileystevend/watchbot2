@@ -63,6 +63,7 @@ def scrape_chrono24(url):
     logger.info(f"Fetching mobile URL → {fetch_url}")
     
     try:
+        logger.info(f"chrono try loop. requests = {requests}")
         resp = requests.get(fetch_url, headers=headers, cookies=COOKIES, timeout=10)
         resp.raise_for_status()
         logger.info(f"HTTP fetch succeeded for {fetch_url}")
@@ -80,7 +81,7 @@ def _scrape_with_selenium(url):
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument(f"--user-agent={random.choice(USER_AGENTS)}")
     options.binary_location = "/usr/bin/chromium"
-
+    logger.info(f"this is the url we're selenium scraping {url}")
     driver = webdriver.Chrome(service=service, options=options)
     # inject consent on the *www* domain so mobile inherits it
     driver.get(url)
