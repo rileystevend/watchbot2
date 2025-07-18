@@ -112,7 +112,7 @@ def _scrape_with_selenium(url):
     time.sleep(1)
     # 2) WAIT for the mobile tiles
     WebDriverWait(driver, 20).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, ".article-item-container"))
+        EC.presence_of_element_located((By.CSS_SELECTOR, "div.article-item-container"))
     )
     # scroll to ensure any lazy-loading
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -129,21 +129,32 @@ def _scrape_with_selenium(url):
         logger.debug("[scraper] No listing-item--tile found in HTML")
 
     return _parse_listings(html)
-
 def _parse_listings(html):
     soup = BeautifulSoup(html, "html.parser")
     listings = []
-    for item in soup.select("div.article-item-container"):
-        try:
-            title = item.select_one(".article-title").text.strip()
-            price = item.select_one(".article-price").text.strip()
-            href  = item.select_one("a")["href"]
-            listings.append({
-                "title": title,
-                "price": price,
-                "link":  f"https://www.chrono24.com{href}"
-            })
-        except Exception as err:
-            logger.debug(f"Failed parsing a tile: {err}")
+    # support both the old desktop container and the new mobile tile
+    for selector in ("div.article-item-container", "div.listing-item--tile"):
+        for item in soup.select(selector):
+            try:
+                # pick whichever title/price selector exists
+                title_el = item.select_one(".article-title, .listing-item--title")
+                price_el = item.select_one(".article-price, .listing-item--price")
+                link_el  = item.select_one("a")
+                if not (title_el and price_el and link_el):
+                    continue
+
+                title = title_el.get_text(strip=True)
+                price = price_el.get_text(strip=True)
+                href  = link_el["href"]
+                # absolute URL
+                link  = href.startswith("http") and href or f"https://www.chrono24.com{href}"
+
+                listings.append({
+                    "title": title,
+                    "price": price,
+                    "link":  link
+                })
+            except Exception as err:
+                logger.debug(f"Failed parsing a listing: {err}")
     logger.info(f"Parsed {len(listings)} listings")
     return listings
