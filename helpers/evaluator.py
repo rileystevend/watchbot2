@@ -1,5 +1,5 @@
 import logging
-from langchain_openai import OpenAI  # or from langchain_community.llms import OpenAI
+from langchain_community.llms import OpenAI
 import openai
 
 logger = logging.getLogger("evaluator")
