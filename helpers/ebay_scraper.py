@@ -43,11 +43,7 @@ def parse_ebay_listings(html):
     logger.info(f"Parsed {len(listings)} eBay listings")
     return listings
 
-def scrape_ebay_certified_rolex():
-    # Build the eBay search URL for “certified Rolex watch”
-    query = "certified+rolex+watch"
-    url = f"https://www.ebay.com/sch/i.html?_nkw={query}&_sop=10"  # sort by newly listed
-
+def scrape_ebay_certified_rolex(url):
     headers = {
         "User-Agent": random.choice(USER_AGENTS),
         "Accept-Language": "en-US,en;q=0.9",
