@@ -142,7 +142,7 @@ def _parse_listings(html):
             "price": price,
             "link":  "https://www.chrono24.com" + href
         })
-        except Exception as err:
+    except Exception as err:
             logger.debug(f"Failed parsing a tile: {err}")
     logger.info(f"Parsed {len(listings)} listings")
     return listings
