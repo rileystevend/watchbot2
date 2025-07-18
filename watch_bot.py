@@ -33,6 +33,7 @@ def main():
                         f"Analysis: {result}\n"
                         f"Link: {listing['link']}"
                     )
+                    logger.info(f"About to send message: {message}")
                     send_notification(message)
             except Exception as eval_err:
                 logger.error(f"Failed to evaluate listing {listing}: {eval_err}")
