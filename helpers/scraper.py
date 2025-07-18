@@ -70,7 +70,8 @@ def scrape_chrono24(url):
         return _parse_listings(resp.text)
     except Exception as e:
         logger.warning(f"HTTP failed ({e}), falling back to Selenium")
-        return _scrape_with_selenium(fetch_url)
+        desktop_search = desktop_url + "?dosearch=true"
+        return _scrape_with_selenium(desktop_search)
 
 def _scrape_with_selenium(url):
     service = Service("/usr/bin/chromedriver")
