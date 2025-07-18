@@ -1,127 +1,72 @@
-import logging
-import random
-import time
-import requests
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-
-logger = logging.getLogger('scraper')
-
-# Rotate user agents to mimic real browsers
-USER_AGENTS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 "
-    "(KHTML, like Gecko) Version/15.1 Safari/605.1.15",
-]
-
-# Cookie to bypass cookie-consent banner
-COOKIES = {"cookieconsent_status": "dismiss"}
-
 def scrape_chrono24(url):
-    fetch_url = url + "?dosearch=true"
-    headers = {
-        'User-Agent': random.choice(USER_AGENTS),
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Accept': 'text/html,application/xhtml+xml',
-        'Referer': 'https://www.google.com',
-        'Connection': 'keep-alive',
-    }
+    # 1) force the search + mobile subdomain
+    fetch_url = (url + "?dosearch=true").replace(
+        "www.chrono24.com", "m.chrono24.com"
+    )
     try:
         resp = requests.get(fetch_url, headers=headers, cookies=COOKIES, timeout=10)
         resp.raise_for_status()
-        html = resp.text
-        logger.info(f"HTTP fetch succeeded for {fetch_url}: status={resp.status_code}, length={len(html)}")
-        return _parse_listings(html)
-    except Exception as http_err:
-        logger.warning(f"HTTP fetch failed ({http_err}), falling back to Selenium")
+        logger.info(f"HTTP fetch succeeded for {fetch_url}")
+        return _parse_listings(resp.text)
+    except Exception as e:
+        logger.warning(f"HTTP failed ({e}), falling back to Selenium")
         return _scrape_with_selenium(fetch_url)
 
 def _scrape_with_selenium(url):
+    service = Service("/usr/bin/chromedriver")
     options = Options()
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument(f"--user-agent={random.choice(USER_AGENTS)}")
-    options.binary_location = '/usr/bin/chromium'
-    service = Service('/usr/bin/chromedriver')
-    driver = webdriver.Chrome(service=service, options=options)
+    options.binary_location = "/usr/bin/chromium"
 
+    driver = webdriver.Chrome(service=service, options=options)
+    # inject consent on the *www* domain so mobile inherits it
     driver.get("https://www.chrono24.com/")
     driver.add_cookie({
-        "name":  "cookieconsent_status",
-        "value": "dismiss",
+        "name":   "cookieconsent_status",
+        "value":  "dismiss",
         "domain": "www.chrono24.com",
         "path":   "/"
-     })
-    try:
-        driver.get(url)
+    })
 
-        # Wait for the JS-rendered listings to appear
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, 'nav.s3-links'))
-        )
-    
-        # now scroll *way* down into the results area
-        driver.execute_script("window.scrollTo(0, 3000);")
-        time.sleep(1)
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(2)
-    
-        # finally wait for at least one result card to appear
-        WebDriverWait(driver, 20).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, '.article-item-container'))
-        )
-        # Scroll to bottom to load any lazy content
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(2)
+    # now hit the mobile+search URL
+    driver.get(url)
+    # 2) WAIT for the mobile tiles
+    WebDriverWait(driver, 20).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, "div.listing-item--tile"))
+    )
+    # scroll to ensure any lazy-loading
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    time.sleep(1)
 
-        # Dismiss the cookie banner if it's still present
-        try:
-            btn = driver.find_element(By.ID, "onetrust-accept-btn-handler")
-            btn.click()
-        except Exception:
-            pass
+    html = driver.page_source
+    driver.quit()
+    logger.info("Selenium fetch succeeded and injected cookie")
+    # 3) Dump a quick snippet so you can verify you really have tiles
+    snippet_idx = html.lower().find('div class="listing-item--tile')
+    if snippet_idx != -1:
+        logger.debug("[scraper] TILE SNIPPET:\n" + html[snippet_idx:snippet_idx+500])
+    else:
+        logger.debug("[scraper] No listing-item--tile found in HTML")
 
-        html = driver.page_source
-#        start = html.lower().find('<body')
-#        end   = html.lower().find('</body>') + len('</body>')
-#        logger.info(f"[scraper] BODY HTML:\n{html[start:end]}")
-        
-        driver.quit()
-        logger.info("Selenium fetch succeeded with dynamic wait and injected cookie")
-# find where the first card lives in the HTML and log a snippet
-        idx = html.lower().find('<div class="article-item-container')
-        if idx != -1:
-            snippet = html[idx: idx + 1000]   # 1,000 chars around the first card
-            logger.info(f"[scraper] SAMPLE CARD HTML:\n{snippet}")
-        else:
-            logger.info("[scraper] No <div.article-item-container> found in HTML")
-        return _parse_listings(html)
-    except Exception as sel_err:
-        logger.error(f"Selenium fetch failed: {sel_err}")
-        return []
+    return _parse_listings(html)
 
 def _parse_listings(html):
-    soup = BeautifulSoup(html, 'html.parser')
+    soup = BeautifulSoup(html, "html.parser")
     listings = []
-    for item in soup.select("div.listing-item--tile"):
-        title = item.select_one(".listing-item--title").text.strip()
-        price = item.select_one(".listing-item--price").text.strip()
-        link  = "https://www.chrono24.com" + item.select_one("a")["href"]
-        listings.append({"title": title, "price": price, "link": link})
-#    for item in soup.select('.article-item-container'):
-#        try:
-#            price = item.select_one('.article-price').text.strip()
-#            title = item.select_one('.article-title').text.strip()
-#            link = item.select_one('a')['href']
-#            listings.append({'title': title, 'price': price, 'link': link})
-#    except Exception as parse_err:
-#    logger.info(f"Failed parsing an item: {parse_err}")
+    for tile in soup.select("div.listing-item--tile"):
+        try:
+            title = tile.select_one(".listing-item--title").text.strip()
+            price = tile.select_one(".listing-item--price").text.strip()
+            href  = tile.select_one("a")["href"]
+            listings.append({
+                "title": title,
+                "price": price,
+                "link":  "https://www.chrono24.com" + href
+            })
+        except Exception as err:
+            logger.debug(f"Failed parsing a tile: {err}")
     logger.info(f"Parsed {len(listings)} listings")
     return listings
