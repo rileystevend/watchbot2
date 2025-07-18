@@ -87,7 +87,7 @@ def _scrape_with_selenium(url):
         except Exception:
             pass
 
-#        html = driver.page_source
+         html = driver.page_source
 #        start = html.lower().find('<body')
 #        end   = html.lower().find('</body>') + len('</body>')
 #        logger.info(f"[scraper] BODY HTML:\n{html[start:end]}")
