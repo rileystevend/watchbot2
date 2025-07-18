@@ -87,10 +87,10 @@ def _scrape_with_selenium(url):
         except Exception:
             pass
 
-        html = driver.page_source
-        start = html.lower().find('<body')
-        end   = html.lower().find('</body>') + len('</body>')
-        logger.info(f"[scraper] BODY HTML:\n{html[start:end]}")
+#        html = driver.page_source
+#        start = html.lower().find('<body')
+#        end   = html.lower().find('</body>') + len('</body>')
+#        logger.info(f"[scraper] BODY HTML:\n{html[start:end]}")
         
         driver.quit()
         logger.info("Selenium fetch succeeded with dynamic wait and injected cookie")
