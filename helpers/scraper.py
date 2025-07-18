@@ -1,3 +1,37 @@
+import logging
+import random
+import time
+import requests
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+logger = logging.getLogger('scraper')
+
+# Rotate user agents to mimic real browsers
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 "
+    "(KHTML, like Gecko) Version/15.1 Safari/605.1.15",
+]
+
+# Cookie to bypass cookie-consent banner
+COOKIES = {"cookieconsent_status": "dismiss"}
+
+headers = {
+        'User-Agent': random.choice(USER_AGENTS),
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept': 'text/html,application/xhtml+xml',
+        'Referer': 'https://www.google.com',
+        'Connection': 'keep-alive',
+}
+
+
 def scrape_chrono24(url):
     # 1) force the search + mobile subdomain
     fetch_url = (url + "?dosearch=true").replace(
