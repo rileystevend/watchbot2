@@ -62,6 +62,17 @@ def _scrape_with_selenium(url):
         driver.get(url)
 
         # Wait for the JS-rendered listings to appear
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, 'nav.s3-links'))
+        )
+    
+        # now scroll *way* down into the results area
+        driver.execute_script("window.scrollTo(0, 3000);")
+        time.sleep(1)
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(2)
+    
+        # finally wait for at least one result card to appear
         WebDriverWait(driver, 20).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, '.article-item-container'))
         )
@@ -83,6 +94,13 @@ def _scrape_with_selenium(url):
         
         driver.quit()
         logger.info("Selenium fetch succeeded with dynamic wait and injected cookie")
+# find where the first card lives in the HTML and log a snippet
+        idx = html.lower().find('<div class="article-item-container')
+        if idx != -1:
+            snippet = html[idx: idx + 1000]   # 1,000 chars around the first card
+            logger.info(f"[scraper] SAMPLE CARD HTML:\n{snippet}")
+        else:
+            logger.info("[scraper] No <div.article-item-container> found in HTML")
         return _parse_listings(html)
     except Exception as sel_err:
         logger.error(f"Selenium fetch failed: {sel_err}")
