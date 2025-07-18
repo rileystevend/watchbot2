@@ -84,7 +84,7 @@ def _scrape_with_selenium(url):
 
     driver = webdriver.Chrome(service=service, options=options)
     # inject consent on the *www* domain so mobile inherits it
-    driver.get("https://www.chrono24.com/")
+    driver.get(url)
     driver.add_cookie({
         "name":   "cookieconsent_status",
         "value":  "dismiss",
