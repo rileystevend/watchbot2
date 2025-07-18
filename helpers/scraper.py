@@ -24,6 +24,7 @@ USER_AGENTS = [
 COOKIES = {"cookieconsent_status": "dismiss"}
 
 def scrape_chrono24(url):
+    fetch_url = url + "?dosearch=true"
     headers = {
         'User-Agent': random.choice(USER_AGENTS),
         'Accept-Language': 'en-US,en;q=0.9',
@@ -32,14 +33,14 @@ def scrape_chrono24(url):
         'Connection': 'keep-alive',
     }
     try:
-        resp = requests.get(url, headers=headers, cookies=COOKIES, timeout=10)
+        resp = requests.get(fetch_url, headers=headers, cookies=COOKIES, timeout=10)
         resp.raise_for_status()
         html = resp.text
-        logger.info(f"HTTP fetch succeeded: status={resp.status_code}, length={len(html)}")
+        logger.info(f"HTTP fetch succeeded for {fetch_url}: status={resp.status_code}, length={len(html)}")
         return _parse_listings(html)
     except Exception as http_err:
         logger.warning(f"HTTP fetch failed ({http_err}), falling back to Selenium")
-        return _scrape_with_selenium(url)
+        return _scrape_with_selenium(fetch_url)
 
 def _scrape_with_selenium(url):
     options = Options()
@@ -88,9 +89,9 @@ def _scrape_with_selenium(url):
             pass
 
         html = driver.page_source
-        start = html.lower().find('<body')
-        end   = html.lower().find('</body>') + len('</body>')
-        logger.info(f"[scraper] BODY HTML:\n{html[start:end]}")
+#        start = html.lower().find('<body')
+#        end   = html.lower().find('</body>') + len('</body>')
+#        logger.info(f"[scraper] BODY HTML:\n{html[start:end]}")
         
         driver.quit()
         logger.info("Selenium fetch succeeded with dynamic wait and injected cookie")
