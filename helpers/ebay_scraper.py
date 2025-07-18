@@ -13,27 +13,6 @@ USER_AGENTS = [
     "(KHTML, like Gecko) Version/15.1 Safari/605.1.15",
 ]
 
-def scrape_ebay_certified_rolex():
-    # Build the eBay search URL for “certified Rolex watch”
-    query = "certified+rolex+watch"
-    url = f"https://www.ebay.com/sch/i.html?_nkw={query}&_sop=10"  # sort by newly listed
-
-    headers = {
-        "User-Agent": random.choice(USER_AGENTS),
-        "Accept-Language": "en-US,en;q=0.9",
-        "Accept": "text/html,application/xhtml+xml",
-        "Connection": "keep-alive",
-    }
-
-    try:
-        resp = requests.get(url, headers=headers, timeout=10)
-        resp.raise_for_status()
-        logger.info(f"eBay fetch succeeded: {resp.status_code} {len(resp.text)} bytes")
-        return parse_ebay_listings(resp.text)
-    except Exception as e:
-        logger.error(f"Failed to fetch eBay listings: {e}")
-        return []
-
 def parse_ebay_listings(html):
     soup = BeautifulSoup(html, "html.parser")
     listings = []
@@ -63,6 +42,28 @@ def parse_ebay_listings(html):
 
     logger.info(f"Parsed {len(listings)} eBay listings")
     return listings
+
+def scrape_ebay_certified_rolex():
+    # Build the eBay search URL for “certified Rolex watch”
+    query = "certified+rolex+watch"
+    url = f"https://www.ebay.com/sch/i.html?_nkw={query}&_sop=10"  # sort by newly listed
+
+    headers = {
+        "User-Agent": random.choice(USER_AGENTS),
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept": "text/html,application/xhtml+xml",
+        "Connection": "keep-alive",
+    }
+
+    try:
+        resp = requests.get(url, headers=headers, timeout=10)
+        resp.raise_for_status()
+        logger.info(f"eBay fetch succeeded: {resp.status_code} {len(resp.text)} bytes")
+        return parse_ebay_listings(resp.text)
+    except Exception as e:
+        logger.error(f"Failed to fetch eBay listings: {e}")
+        return []
+
 
 if __name__ == "__main__":
     for watch in scrape_ebay_certified_rolex():
