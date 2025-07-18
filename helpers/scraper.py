@@ -57,9 +57,7 @@ def _normalize_desktop_url(url: str) -> str:
 def scrape_chrono24(url):
     # 1) force the search + mobile subdomain
     desktop_url = _normalize_desktop_url(url)
-    fetch_url = (desktop_url + "?dosearch=true").replace(
-        "www.chrono24.com", "m.chrono24.com"
-    )
+    fetch_url   = desktop_url.replace("www.", "m.") + "?dosearch=true"
     logger.info(f"Normalized desktop URL → {desktop_url}")
     logger.info(f"Fetching mobile URL → {fetch_url}")
     
@@ -90,7 +88,7 @@ def _scrape_with_selenium(url):
             EC.element_to_be_clickable((By.CSS_SELECTOR, "button.js-cookie-accept-all"))
         )
         btn.click()
-    except TimeoutException:
+    except Exception:
         pass
     # give the page a second to reflow
     time.sleep(1)
